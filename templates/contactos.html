@@ -302,7 +302,7 @@
                 <h5 class="mb-0">Agregar Nuevo Contacto</h5>
             </div>
             <div class="card-body mt-1">
-                <form method="POST" action="{{ url_for('agregar_contacto') }}">
+                <form action="{{ url_for('agregar_contacto') }}" method="POST" enctype="application/x-www-form-urlencoded">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre</label>

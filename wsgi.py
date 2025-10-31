@@ -5,7 +5,6 @@ try:
     # Crear tablas si no existen
     with app.app_context():
         db.create_all()
-        print("Base de datos inicializada correctamente")
 except Exception as e:
     print(f"Error al inicializar la base de datos: {str(e)}")
 

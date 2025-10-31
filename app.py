@@ -12,9 +12,6 @@ load_dotenv()
 
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path, override=True)
-print(f"Ruta del .env: {env_path.absolute()}")
-print(f"¿Existe el archivo? {env_path.exists()}")
-print(f"Contenido de DATABASE_URL: {os.environ.get('DATABASE_URL')}")
 
 app = Flask(__name__)
 
@@ -24,7 +21,6 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-123')
 # Configuración de la base de datos
 try:
     db_url = os.environ.get('DATABASE_URL')
-    print(f"DATABASE_URL: {db_url}", file=sys.stderr)  # Para depuración
     
     if not db_url:
         raise ValueError("DATABASE_URL no está configurada")
@@ -35,8 +31,6 @@ try:
     
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 except Exception as e:
-    print(f"Error configurando la base de datos: {str(e)}", file=sys.stderr)
-    # Configuración local de respaldo
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///contactos.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -126,8 +120,6 @@ with app.app_context():
     # Agregar algunos correos de ejemplo a la lista de autorizados
     if not UsuarioAutorizado.query.first():
         usuarios_autorizados = [
-            {"email": "usuario1@ejemplo.com", "main_name": "Usuario Uno", "rol": "usuario"},
-            {"email": "usuario2@ejemplo.com", "main_name": "Usuario Dos", "rol": "usuario"},
             {"email": "guillermoandrada@gmail.com", "main_name": "Guillermo", "rol": "admin"}
         ]
         for usuario_data in usuarios_autorizados:
@@ -202,25 +194,58 @@ def lista_contactos():
 
 @app.route('/contactos/agregar', methods=['POST'])
 @login_required
-@admin_required
 def agregar_contacto():
-    if request.method == 'POST':
-        try:
-            nuevo_contacto = Contacto(
-                nombre=request.form['nombre'],
-                email=request.form['email'],
-                telefono=request.form.get('telefono', ''),
-                direccion=request.form['direccion'],
-                gps_url=request.form.get('gps_url', '')
-            )
-            db.session.add(nuevo_contacto)
-            db.session.commit()
-            flash('Contacto agregado correctamente', 'success')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error al agregar el contacto', 'error')
-    
-    return redirect(url_for('lista_contactos'))
+    try:
+        # Obtener datos del formulario
+        data = request.form if request.form else request.get_json()
+        
+        # Validar datos requeridos
+        if not data or 'nombre' not in data:
+            return jsonify({'success': False, 'error': 'El nombre es requerido'}), 400
+
+        # Crear nuevo contacto
+        nuevo_contacto = Contacto(
+            nombre=data['nombre'].strip(),
+            email=data.get('email', '').strip(),
+            telefono=data.get('telefono', '').strip(),
+            direccion=data.get('direccion', '').strip(),
+            gps_url=data.get('gps_url', '').strip(),
+            activo=True
+        )
+
+        # Guardar en la base de datos
+        db.session.add(nuevo_contacto)
+        db.session.commit()
+
+        # Si es una petición AJAX, retornar JSON
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+            return jsonify({
+                'success': True,
+                'message': 'Contacto agregado correctamente',
+                'contacto': {
+                    'id': nuevo_contacto.id,
+                    'nombre': nuevo_contacto.nombre,
+                    'email': nuevo_contacto.email,
+                    'telefono': nuevo_contacto.telefono,
+                    'direccion': nuevo_contacto.direccion,
+                    'gps_url': nuevo_contacto.gps_url
+                }
+            })
+
+        # Si es un envío de formulario normal
+        flash('Contacto agregado correctamente', 'success')
+        return redirect(url_for('lista_contactos'))
+
+    except Exception as e:
+        db.session.rollback()
+        error_msg = f'Error al agregar el contacto: {str(e)}'
+        print(error_msg)
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+            return jsonify({'success': False, 'error': error_msg}), 500
+            
+        flash('Error al agregar el contacto', 'error')
+        return redirect(url_for('lista_contactos'))
 
 @app.route('/contactos/editar/<int:contacto_id>', methods=['GET', 'POST'])
 @login_required
