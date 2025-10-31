@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h2 class="text-center">Acceso no autorizado</h2>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead">
+                    Lo sentimos, el correo <strong>{{ email }}</strong> no tiene acceso a esta lista de contactos.
+                </p>
+                <p>
+                    Si crees que esto es un error, por favor contacta al administrador para solicitar acceso.
+                </p>
+                <pre>
+                    Guillermo Andrada
+                    Teléfono: +54 9 387 6295801
+                    WhatsApp: <a href="https://wa.me/5493876295801?text=Hola%20Quiero%20acceder%20a%20la%20lista%20de%20contactos">Click para escribir</a>
+                </pre>
+                <div class="mt-4">
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">
+                        Volver al inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

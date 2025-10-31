@@ -1,0 +1,16 @@
+LOAD DATABASE
+    FROM sqlite:///Users/guillermoandrada/Projects/contactos/contactos.db
+    INTO postgresql://neondb_owner:npg_yV9nU6BFoWxA@ep-frosty-darkness-ac6tpsx5-pooler.sa-east-1.aws.neon.tech/neondb?sslmode=require&options=endpoint%3Dep-frosty-darkness-ac6tpsx5
+    
+    WITH include drop, create tables, create indexes, reset sequences
+
+    SET PostgreSQL PARAMETERS
+        maintenance_work_mem to '256MB',
+        work_mem to '256MB',
+        search_path to 'public'
+
+    SET PostgreSQL PARAMETERS
+        synchronous to 'off',
+        fsync to 'off',
+        full_page_writes to 'off',
+        client_min_messages to 'warning';

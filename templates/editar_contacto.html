@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Editar Contacto</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('editar_contacto', contacto_id=contacto.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" 
+                               value="{{ contacto.nombre }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               value="{{ contacto.email }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono (opcional)</label>
+                        <input type="tel" class="form-control" id="telefono" name="telefono"
+                               value="{{ contacto.telefono or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccion" name="direccion"
+                               value="{{ contacto.direccion }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="gps_url" class="form-label">Enlace de GPS (opcional)</label>
+                        <input type="url" class="form-control" id="gps_url" name="gps_url"
+                               value="{{ contacto.gps_url or '' }}">
+                        <div class="form-text">Pegue aquí el enlace de Google Maps o similar</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('lista_contactos') }}" class="btn btn-secondary me-md-2">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

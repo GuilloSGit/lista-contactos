@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <!-- Script para la búsqueda con debounce -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            let debounceTimer;
+
+            // Función para normalizar texto (quitar acentos y convertir a minúsculas)
+            function normalizeText(text) {
+                if (!text) return '';
+                return text.toString().normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Elimina diacríticos
+                    .toLowerCase()
+                    .trim();
+            }
+
+            // Función para filtrar contactos
+            function filterContacts(searchTerm) {
+                const searchNormalized = normalizeText(searchTerm);
+
+                // Manejar la tabla de contactos activos
+                filterTable('table:not(.table-sm)', searchNormalized);
+
+                // Manejar la tabla de contactos eliminados si existe
+                const deletedTable = document.querySelector('table.table-sm');
+                if (deletedTable) {
+                    filterTable('table.table-sm', searchNormalized, true);
+                }
+
+                // Manejar las tarjetas de la vista móvil
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    const cardText = normalizeText(card.textContent);
+                    card.style.display = !searchTerm || cardText.includes(searchNormalized) ? '' : 'none';
+                });
+            }
+
+            // Función para filtrar una tabla específica
+            function filterTable(selector, searchTerm, isDeletedTable = false) {
+                const table = document.querySelector(selector);
+                if (!table) return;
+
+                const tbody = table.querySelector('tbody');
+                if (!tbody) return;
+
+                const rows = tbody.querySelectorAll('tr');
+                let hasVisibleRows = false;
+
+                // Filtrar filas
+                rows.forEach(row => {
+                    if (row.classList.contains('d-none')) return; // Saltar filas ya ocultas
+
+                    const rowText = normalizeText(row.textContent);
+                    const shouldShow = !searchTerm || rowText.includes(searchTerm);
+
+                    row.style.display = shouldShow ? '' : 'none';
+                    if (shouldShow) hasVisibleRows = true;
+                });
+
+                // Manejar mensaje de "no hay resultados"
+                const existingMessage = tbody.querySelector('.no-results-message');
+
+                if (searchTerm && !hasVisibleRows) {
+                    if (!existingMessage) {
+                        const colCount = table.querySelector('thead th').parentElement.children.length;
+                        const messageRow = document.createElement('tr');
+                        messageRow.className = 'no-results-message';
+                        messageRow.innerHTML = `<td colspan="${colCount}" class="text-center text-muted">No se encontraron contactos</td>`;
+                        tbody.appendChild(messageRow);
+                    }
+                } else if (existingMessage) {
+                    existingMessage.remove();
+                }
+            }
+
+            // Función de debounce
+            function debounce(func, delay) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(func, delay);
+            }
+
+            // Event listener para el input de búsqueda
+            searchInput.addEventListener('input', function () {
+                debounce(() => filterContacts(this.value), 300);
+            });
+
+            // Limpiar búsqueda al cargar la página
+            searchInput.value = '';
+        });
+    </script>
+    <!-- Columna de la lista de contactos -->
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Lista de Contactos</h2>
+        </div>
+
+        <!-- Barra de búsqueda -->
+        <div class="input-group mb-4">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Buscar contactos..."
+                aria-label="Buscar">
+        </div>
+
+        <!-- Versión para escritorio (tabla) -->
+        <div class="d-none d-md-block">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>GPS</th>
+                            {% if session.get('rol') == 'admin' %}
+                            <th>Acciones</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contacto in contactos %}
+                        <tr>
+                            <td class="align-middle">{{ contacto.nombre }}</td>
+                            <td class="align-middle">
+                                {% if contacto.telefono %}
+                                <a href="tel:{{ contacto.telefono }}" class="text-decoration-none">
+                                    <i class="fas fa-phone-alt me-2"></i>{{ contacto.telefono }}
+                                </a>
+                                {% else %}
+                                <span class="text-muted"><i class="fas fa-phone-alt me-2"></i>Sin teléfono</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                {% if contacto.gps_url %}
+                                <a href="{{ contacto.gps_url }}" target="_blank"
+                                    class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Mapa
+                                </a>
+                                {% else %}
+                                <span class="text-muted me-2">Sin mapa</span>
+                                {% endif %}
+
+                            </td>
+                            {% if session.get('rol') == 'admin' %}
+                            <td class="align-middle">
+                                <a href="{{ url_for('editar_contacto', contacto_id=contacto.id) }}"
+                                    class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="fas fa-edit me-1"></i> Editar
+                                </a>
+                                <form method="POST" action="{{ url_for('eliminar_contacto', contacto_id=contacto.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contacto.nombre }}?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Versión para móviles (cards) -->
+        <div class="d-md-none">
+            <div class="row g-3">
+                {% for contacto in contactos %}
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title">{{ contacto.nombre }}</h5>
+                                <!-- Mapa -->
+                                <div class="mb-2 p-2">
+                                    {% if contacto.gps_url %}
+                                    <a href="{{ contacto.gps_url }}" 
+                                    target="_blank"
+                                    class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        Ver en mapa
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        Sin mapa disponible
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Teléfono -->
+                            <div class="mb-2">
+                                {% if contacto.telefono %}
+                                <a href="tel:{{ contacto.telefono }}"
+                                    class="text-decoration-none d-flex align-items-center">
+                                    <i class="fas fa-phone-alt me-2 text-primary"></i>
+                                    <span>{{ contacto.telefono }}</span>
+                                </a>
+                                {% else %}
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="fas fa-phone-alt me-2"></i>
+                                    <span>Sin teléfono</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Dirección -->
+                            {% if contacto.direccion %}
+                            <div class="mb-2 text-muted">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                <small>{{ contacto.direccion }}</small>
+                            </div>
+                            {% endif %}
+
+                            <!-- Acciones de administrador -->
+                            {% if session.get('rol') == 'admin' %}
+                            <div class="d-flex gap-2 mt-3">
+                                <a href="{{ url_for('editar_contacto', contacto_id=contacto.id) }}"
+                                    class="btn btn-sm btn-outline-primary flex-grow-1">
+                                    <i class="fas fa-edit me-1"></i> Editar
+                                </a>
+                                <form method="POST" action="{{ url_for('eliminar_contacto', contacto_id=contacto.id) }}"
+                                    class="d-inline"
+                                    onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contacto.nombre }}?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if session.get('rol') == 'admin' and contactos_inactivos %}
+        <!-- Sección de contactos eliminados -->
+        <div class="mt-5">
+            <h4 class="mb-3">Contactos Eliminados</h4>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Dirección</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for contacto in contactos_inactivos %}
+                        <tr class="table-light">
+                            <td>{{ contacto.nombre }}</td>
+                            <td>
+                                {% if contacto.telefono %}
+                                <a href="tel:{{ contacto.telefono }}" class="text-decoration-none">
+                                    <i class="fas fa-phone-alt me-1"></i>{{ contacto.telefono }}
+                                </a>
+                                {% else %}
+                                <span class="text-muted">Sin teléfono</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ contacto.direccion or 'Sin dirección' }}</td>
+                            <td>
+                                <form method="POST"
+                                    action="{{ url_for('restaurar_contacto', contacto_id=contacto.id) }}"
+                                    class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-undo me-1"></i> Restaurar
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No hay contactos eliminados</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    </div> <!-- Cierre de la columna de contactos -->
+
+    <!-- Columna del formulario de contacto (solo para administradores) -->
+    {% if session.get('rol') == 'admin' %}
+    <div class="col-md-4 mt-5">
+        <div class="mt-2">
+            <!-- Necesito espacio -->
+        </div>
+        <div class="card shadow-sm mt-5 mb-5">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Agregar Nuevo Contacto</h5>
+            </div>
+            <div class="card-body mt-1">
+                <form method="POST" action="{{ url_for('agregar_contacto') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="mb-3">
+                        <label for="nombre" class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefono" class="form-label">Teléfono (opcional)</label>
+                        <input type="tel" class="form-control" id="telefono" name="telefono">
+                    </div>
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <input type="text" class="form-control" id="direccion" name="direccion" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="gps_url" class="form-label">Enlace de Google Maps (opcional)</label>
+                        <input type="url" class="form-control" id="gps_url" name="gps_url"
+                            placeholder="https://maps.google.com/?q=...">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Guardar Contacto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div> <!-- Cierre del row principal -->
+{% endblock %}

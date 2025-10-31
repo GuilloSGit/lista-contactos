@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Administración de Usuarios</h2>
+    
+    <!-- Formulario para agregar nuevo usuario -->
+    <div class="card mt-4 mb-4">
+        <div class="card-header">
+            <h5>Agregar Nuevo Usuario</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('admin_usuarios') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label for="email" class="form-label">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="email" name="email" required 
+                               placeholder="usuario@ejemplo.com">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="main_name" class="form-label">Nombre para Mostrar</label>
+                        <input type="text" class="form-control" id="main_name" name="main_name" required
+                               placeholder="Nombre del usuario">
+                    </div>
+                    <!-- Div más para el rol usuario / admin -->
+                    <div class="col-md-2">
+                        <label for="rol" class="form-label">Rol</label>
+                        <select class="form-select" id="rol" name="rol" required>
+                            <option value="usuario">Usuario</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">Agregar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de usuarios existentes -->
+    <div class="card">
+        <div class="card-header">
+            <h5>Usuarios Autorizados</h5>
+        </div>
+        <div class="card-body">
+            {% if usuarios %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Correo Electrónico</th>
+                                <th>Nombre para Mostrar</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr>
+                                <td>{{ usuario.id }}</td>
+                                <td>{{ usuario.email }}</td>
+                                <td>{{ usuario.main_name or '--' }}</td>
+                                <td>{{ usuario.rol or '--' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('eliminar_usuario', user_id=usuario.id) }}" 
+                                          class="d-inline" onsubmit="return confirm('¿Estás seguro de eliminar este usuario?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No hay usuarios registrados además del administrador.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
