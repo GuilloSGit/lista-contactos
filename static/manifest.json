@@ -1,7 +1,7 @@
 {
   "name": "Lista de Contactos",
   "short_name": "Contactos",
-  "description": "Directorio de contactos Media Agua",
+  "description": "Directorio de contactos - Media Agua",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8f9fa",

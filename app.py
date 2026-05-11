@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from email_validator import validate_email, EmailNotValidError
@@ -219,6 +219,16 @@ with app.app_context():
                     db.session.add(contacto)
         
         db.session.commit()
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.png', mimetype='image/png')
+
+@app.route('/sw.js')
+def sw():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'sw.js', mimetype='application/javascript')
 
 @app.route('/', methods=['GET', 'POST'])
 @app.route('/login', methods=['GET', 'POST'])
