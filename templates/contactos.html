@@ -120,30 +120,49 @@
                     </thead>
                     <tbody>
                         {% for contacto in contactos %}
-                        <tr>
+                        <tr class="{% if contacto.necesita_actualizacion %}table-danger{% endif %}">
                             <td class="align-middle">{{ contacto.nombre }}</td>
                             <td class="align-middle">
                                 {% if contacto.telefono %}
-                                <a href="tel:{{ contacto.telefono }}" class="text-decoration-none">
-                                    <i class="fas fa-phone-alt me-2"></i>{{ contacto.telefono }}
-                                </a>
+                                <div class="d-flex flex-column gap-1">
+                                    <a href="tel:{{ contacto.telefono }}" class="text-decoration-none">
+                                        <i class="fas fa-phone-alt me-2"></i>{{ contacto.telefono }}
+                                    </a>
+                                    <!-- Link WhatsApp -->
+                                    <a href="{{ contacto.whatsapp_url }}" target="_blank"
+                                        class="text-decoration-none text-success">
+                                        <i class="fab fa-whatsapp me-2"></i>Enviar Mensaje
+                                    </a>
+                                </div>
                                 {% else %}
                                 <span class="text-muted"><i class="fas fa-phone-alt me-2"></i>Sin teléfono</span>
                                 {% endif %}
                             </td>
-                            <td class="align-middle">
+                            <td class="align-middle" style="min-width: 200px;">
                                 {% if contacto.gps_url %}
                                 <a href="{{ contacto.gps_url }}" target="_blank"
-                                    class="btn btn-sm btn-outline-primary me-1">
-                                    <i class="fas fa-map-marker-alt me-1"></i> Mapa
+                                    class="btn btn-sm btn-outline-primary d-block w-100">
+                                    <i class="fas fa-external-link-alt me-1"></i> Abrir en Maps
                                 </a>
                                 {% else %}
-                                <span class="text-muted me-2">Sin mapa</span>
+                                <span class="text-muted d-block text-center" style="font-size: 0.85rem;">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Sin enlace GPS
+                                </span>
                                 {% endif %}
-
                             </td>
                             {% if session.get('rol') == 'admin' %}
                             <td class="align-middle">
+                                {% if contacto.necesita_actualizacion %}
+                                <form method="POST"
+                                    action="{{ url_for('confirmar_actualizacion', contacto_id=contacto.id) }}"
+                                    class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <button type="submit" class="btn btn-sm btn-success me-1"
+                                        title="Confirmar datos actualizados">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
                                 <a href="{{ url_for('editar_contacto', contacto_id=contacto.id) }}"
                                     class="btn btn-sm btn-outline-primary me-1">
                                     <i class="fas fa-edit me-1"></i> Editar
@@ -170,24 +189,45 @@
             <div class="row g-3">
                 {% for contacto in contactos %}
                 <div class="col-12">
-                    <div class="card shadow-sm">
+                    <div
+                        class="card shadow-sm {% if contacto.necesita_actualizacion %}bg-danger bg-opacity-10 border-danger border-opacity-50{% endif %}">
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
-                                <h5 class="card-title">{{ contacto.nombre }}</h5>
+                                {% if contacto.necesita_actualizacion %}
+                                <div class="alert alert-danger d-flex justify-content-between w-100">
+                                    <strong>¡Atención!</strong>&nbsp;Este contacto necesita actualización.
+                                    {% if session.get('rol') == 'admin' %}
+                                    <form method="POST"
+                                        action="{{ url_for('confirmar_actualizacion', contacto_id=contacto.id) }}"
+                                        class="d-inline m-0 p-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-sm btn-success"
+                                            title="Confirmar datos actualizados">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex flex-column">
+                                <!-- Nombre -->
+                                <div class="w-100">
+                                    <h5 class="card-title">{{ contacto.nombre }}</h5>
+                                </div>
                                 <!-- Mapa -->
-                                <div class="mb-2 p-2">
+                                <div class="mb-3 mt-2">
                                     {% if contacto.gps_url %}
-                                    <a href="{{ contacto.gps_url }}" 
-                                    target="_blank"
-                                    class="btn btn-sm btn-outline-primary mt-2">
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        Ver en mapa
+                                    <a href="{{ contacto.gps_url }}" target="_blank"
+                                        class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="fas fa-external-link-alt me-1"></i>
+                                        Abrir en Maps
                                     </a>
                                     {% else %}
-                                    <span class="text-muted">
+                                    <div class="text-center text-muted mt-2" style="font-size: 0.85rem;">
                                         <i class="fas fa-map-marker-alt me-1"></i>
-                                        Sin mapa disponible
-                                    </span>
+                                        Sin enlace GPS
+                                    </div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -196,9 +236,14 @@
                             <div class="mb-2">
                                 {% if contacto.telefono %}
                                 <a href="tel:{{ contacto.telefono }}"
-                                    class="text-decoration-none d-flex align-items-center">
+                                    class="text-decoration-none d-flex align-items-center mb-2">
                                     <i class="fas fa-phone-alt me-2 text-primary"></i>
                                     <span>{{ contacto.telefono }}</span>
+                                </a>
+                                <a href="{{ contacto.whatsapp_url }}" target="_blank"
+                                    class="text-decoration-none d-flex align-items-center text-success">
+                                    <i class="fab fa-whatsapp me-2"></i>
+                                    <span>Enviar Mensaje</span>
                                 </a>
                                 {% else %}
                                 <div class="d-flex align-items-center text-muted">
@@ -302,19 +347,22 @@
                 <h5 class="mb-0">Agregar Nuevo Contacto</h5>
             </div>
             <div class="card-body mt-1">
-                <form action="{{ url_for('agregar_contacto') }}" method="POST" enctype="application/x-www-form-urlencoded">
+                <form action="{{ url_for('agregar_contacto') }}" method="POST"
+                    enctype="application/x-www-form-urlencoded">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <div class="mb-3">
                         <label for="nombre" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                        <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Ej: John Doe"
+                            required>
                     </div>
                     <div class="mb-3">
                         <label for="telefono" class="form-label">Teléfono (opcional)</label>
-                        <input type="tel" class="form-control" id="telefono" name="telefono">
+                        <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="+54 9 ...">
                     </div>
                     <div class="mb-3">
                         <label for="direccion" class="form-label">Dirección</label>
-                        <input type="text" class="form-control" id="direccion" name="direccion" required>
+                        <input type="text" class="form-control" id="direccion" name="direccion"
+                            placeholder="Güemes 333, Bº Los Olivos, ...">
                     </div>
                     <div class="mb-3">
                         <label for="gps_url" class="form-label">Enlace de Google Maps (opcional)</label>

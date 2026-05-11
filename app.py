@@ -3,8 +3,11 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from email_validator import validate_email, EmailNotValidError
+from datetime import datetime, timedelta
 import os
 import sys
+import re
+import urllib.parse
 
 from dotenv import load_dotenv
 from pathlib import Path
@@ -78,13 +81,84 @@ class UsuarioAutorizado(db.Model):
 class Contacto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), nullable=True)
     telefono = db.Column(db.String(20), nullable=False)
     direccion = db.Column(db.String(200), nullable=False)
     gps_url = db.Column(db.String(500), nullable=True)
     activo = db.Column(db.Boolean, default=True, nullable=False)
     fecha_creacion = db.Column(db.DateTime, default=db.func.current_timestamp())
     fecha_actualizacion = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    @property
+    def necesita_actualizacion(self):
+        # 125 días son aprox 4 meses y medio
+        limite = datetime.utcnow() - timedelta(days=125)
+        fecha_ref = self.fecha_actualizacion or self.fecha_creacion
+        if fecha_ref:
+            return fecha_ref < limite
+        return False
+
+    @property
+    def embed_map_url(self):
+        if self.gps_url:
+            match = re.search(r'(?:search/|@|[?&]q=)([-0-9.]+)[^0-9-]+([-0-9.]+)', self.gps_url)
+            if match:
+                lat, lng = match.group(1), match.group(2)
+                return f"https://maps.google.com/maps?q={lat},{lng}&t=m&z=16&output=embed&iwloc=near"
+            
+        if self.direccion:
+            return f"https://maps.google.com/maps?q={urllib.parse.quote(self.direccion.strip())}&t=m&z=16&output=embed&iwloc=near"
+            
+        return ""
+
+    @property
+    def whatsapp_url(self):
+        if not self.telefono:
+            return ""
+            
+        telefono_str = str(self.telefono).strip()
+        has_plus = telefono_str.startswith('+')
+        num = re.sub(r'\D', '', telefono_str)
+        
+        if not num:
+            return ""
+            
+        if has_plus:
+            # Caso especial Argentina (+54)
+            if num.startswith('54'):
+                if len(num) == 12 and not num.startswith('549'):
+                    return f"https://wa.me/549{num[2:]}"
+                elif num.startswith('549') and len(num) == 15:
+                    local = num[3:]
+                    if local[2:4] == '15': local = local[:2] + local[4:]
+                    elif local[3:5] == '15': local = local[:3] + local[5:]
+                    elif local[4:6] == '15': local = local[:4] + local[6:]
+                    return f"https://wa.me/549{local}"
+                elif num.startswith('54') and len(num) == 14:
+                    local = num[2:]
+                    if local[2:4] == '15': local = local[:2] + local[4:]
+                    elif local[3:5] == '15': local = local[:3] + local[5:]
+                    elif local[4:6] == '15': local = local[:4] + local[6:]
+                    return f"https://wa.me/549{local}"
+            return f"https://wa.me/{num}"
+            
+        # Si ya viene con el 549 o 54 explícito sin el +
+        if num.startswith('549') and len(num) == 13:
+            return f"https://wa.me/{num}"
+        if num.startswith('54') and len(num) == 12:
+            return f"https://wa.me/549{num[2:]}"
+            
+        # Quitar 0 inicial (prefijo interurbano)
+        if num.startswith('0'):
+            num = num[1:]
+            
+        # Si tiene 12 dígitos, probablemente tenga el '15' metido
+        if len(num) == 12:
+            if num[2:4] == '15': num = num[:2] + num[4:]
+            elif num[3:5] == '15': num = num[:3] + num[5:]
+            elif num[4:6] == '15': num = num[:4] + num[6:]
+            
+        return f"https://wa.me/549{num}"
 
 # Datos iniciales de ejemplo (comentados)
 """
@@ -256,7 +330,7 @@ def editar_contacto(contacto_id):
     if request.method == 'POST':
         try:
             contacto.nombre = request.form['nombre']
-            contacto.email = request.form['email']
+            contacto.email = request.form.get('email', '')
             contacto.telefono = request.form.get('telefono', '')
             contacto.direccion = request.form['direccion']
             contacto.gps_url = request.form.get('gps_url', '')
@@ -269,6 +343,22 @@ def editar_contacto(contacto_id):
             flash('Error al actualizar el contacto', 'error')
     
     return render_template('editar_contacto.html', contacto=contacto)
+
+@app.route('/contactos/confirmar_actualizacion/<int:contacto_id>', methods=['POST'])
+@login_required
+@admin_required
+def confirmar_actualizacion(contacto_id):
+    if request.method == 'POST':
+        try:
+            contacto = Contacto.query.get_or_404(contacto_id)
+            contacto.fecha_actualizacion = datetime.utcnow()
+            db.session.commit()
+            flash('Contacto verificado correctamente', 'success')
+        except Exception as e:
+            db.session.rollback()
+            print(f"ERROR AL CONFIRMAR ACTUALIZACION: {str(e)}")
+            flash('Error al verificar el contacto', 'error')
+    return redirect(url_for('lista_contactos'))
 
 @app.route('/contactos/eliminar/<int:contacto_id>', methods=['POST'])
 @login_required
@@ -284,6 +374,7 @@ def eliminar_contacto(contacto_id):
             return redirect(url_for('lista_contactos'))
         except Exception as e:
             db.session.rollback()
+            print(f"ERROR AL ELIMINAR CONTACTO: {str(e)}")
             flash('Error al eliminar el contacto', 'error')
             return redirect(url_for('lista_contactos'))
     return redirect(url_for('lista_contactos'))
