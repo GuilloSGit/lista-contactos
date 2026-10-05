@@ -7,3 +7,7 @@ __pycache__/
 *.pyd
 .Python
 .pytest_cache/
+
+# Material para videos (no publicar)
+static/music/
+video/
