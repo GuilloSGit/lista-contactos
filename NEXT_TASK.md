@@ -30,8 +30,8 @@ PRÓXIMAS PRIORIDADES:
    sacarlos del repo y agregarlos a .gitignore (decisión del usuario; no se tocaron).
 3. Limpiar vercel.json (la config "runtime" dentro de builds se ignora) y runtime.txt (python-3.10.0, no se usa).
 4. El alta de usuarios (admin) sí consulta DNS (check_deliverability); el login no. SECRET_KEY ya está en Vercel
-   (Production); la clave CSRF hardcodeada se eliminó (Flask-WTF usa SECRET_KEY). Falta definir SECRET_KEY en
-   Preview/Development si se usan. El proyecto de Vercel está linkeado (`.vercel/`, ignorado): `vercel env ls`.
+   (Production); la clave CSRF hardcodeada se eliminó (Flask-WTF usa SECRET_KEY). SECRET_KEY definida en
+   Production, Preview y Development (valores distintos). El proyecto de Vercel está linkeado (`.vercel/`, ignorado): `vercel env ls`.
 
 CONTEXTO TÉCNICO:
 - Lógica en app.py (rutas: /contactos, confirmar_actualizacion, eliminar, restaurar, admin/usuarios).
