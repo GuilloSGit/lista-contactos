@@ -23,9 +23,16 @@ COMPLETADO (2026-10-05):
 - Bugs arreglados al testear: /health usaba SQL en string (ahora text()); logout dejaba el rol en la sesión
   (ahora session.clear()).
 
+- Video guía para Dante (revisar contactos): video/guia-contactos.mp4 (1:55, música static/music/Sin_fricción.mp3).
+  Se regenera con `python3 video/crear_demo_db.py video/demo.db`, levantar la app en el puerto 5056 con esa base
+  (DATABASE_URL=sqlite:///.../video/demo.db) y `node video/grabar.mjs` (puppeteer-core + Chrome); luego mezclar
+  con ffmpeg. `video/` y `static/music/` están en .gitignore. ffmpeg no tiene drawtext: los textos van en el DOM.
+- Fix: editar un contacto sin email mostraba 'None' en el campo email y bloqueaba el guardado.
+- ATENCIÓN: el repo de GitHub es PÚBLICO y contiene volcados con datos personales (ver prioridad 2).
+
 PRÓXIMAS PRIORIDADES:
 1. Probar en dispositivos reales la instalación PWA (Chrome/Android/iOS) y guardar un contacto desde el modal.
-2. Higiene del repo: hay volcados con datos personales versionados (contactos.csv, datos_exportados.csv,
+2. URGENTE, repo PÚBLICO en GitHub: hay volcados con datos personales versionados (contactos.csv, datos_exportados.csv,
    contactos_dump.sql, clean_dump.sql, load_to_neon.load, contactos.db, instance/contactos.db). Evaluar
    sacarlos del repo y agregarlos a .gitignore (decisión del usuario; no se tocaron).
 3. Limpiar vercel.json (la config "runtime" dentro de builds se ignora) y runtime.txt (python-3.10.0, no se usa).
