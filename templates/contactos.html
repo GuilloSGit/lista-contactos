@@ -308,37 +308,35 @@
         <div class="mt-5">
             <h4 class="mb-3">Contactos Eliminados</h4>
             <div class="table-responsive">
-                <table id="tablaEliminados" class="table table-sm table-hover">
-                    <thead class="table-secondary">
+                <table id="tablaEliminados" class="table table-sm table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>Nombre</th>
-                            <th>Teléfono</th>
-                            <th>Dirección</th>
-                            <th>Acciones</th>
+                            <th class="text-nowrap">Teléfono</th>
+                            <th class="d-none d-md-table-cell">Dirección</th>
+                            <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for contacto in contactos_inactivos %}
-                        <tr class="table-light">
-                            <td>{{ contacto.nombre }}</td>
-                            <td>
+                        <tr>
+                            <td class="text-muted">{{ contacto.nombre }}</td>
+                            <td class="text-nowrap">
                                 {% if contacto.telefono %}
-                                <a href="tel:{{ contacto.telefono }}" class="text-decoration-none">
-                                    <i class="fas fa-phone-alt me-1"></i>{{ contacto.telefono }}
+                                <a href="tel:{{ contacto.telefono }}" class="text-decoration-none text-body">
+                                    {{ contacto.telefono }}
                                 </a>
                                 {% else %}
                                 <span class="text-muted">Sin teléfono</span>
                                 {% endif %}
                             </td>
-                            <td>{{ contacto.direccion or 'Sin dirección' }}</td>
-                            <td>
+                            <td class="d-none d-md-table-cell text-muted small">{{ contacto.direccion or 'Sin dirección' }}</td>
+                            <td class="text-end text-nowrap">
                                 <form method="POST"
                                     action="{{ url_for('restaurar_contacto', contacto_id=contacto.id) }}"
-                                    class="d-inline">
+                                    class="d-inline m-0">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-success">
-                                        <i class="fas fa-undo me-1"></i> Restaurar
-                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary py-0">Restaurar</button>
                                 </form>
                             </td>
                         </tr>
