@@ -23,7 +23,8 @@ Luego borrar `__pycache__/`.
 
 ## 5. Commit y push
 Conventional Commits, **sin** líneas de atribución a Claude/Anthropic (regla global del usuario).
-Push a `origin/main` solo si el usuario lo pidió en la sesión; si no, preguntar. El push dispara deploy en Vercel.
+Push a `origin/main` **siempre**, sin preguntar: invocar `/cierre` ya es la orden de pushear (pedido
+explícito del usuario). El push dispara deploy en Vercel; después comprobar con `curl` que `/login` responda 200.
 
 ## 6. Prompt para la próxima sesión
 Sobrescribir `NEXT_TASK.md` en la raíz (título `# NEXT_TASK — Prompt para la próxima sesión`, fecha
