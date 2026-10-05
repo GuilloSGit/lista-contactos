@@ -7,7 +7,7 @@ Proyecto: lista-contactos (/Users/guillermoandrada/Projects/lista-contactos). Fl
 SQLite local / Postgres (Neon) en prod, PWA, deploy en Vercel (cada push a main despliega). Todo en español.
 Commits en Conventional Commits, SIN líneas de atribución a Claude/Anthropic.
 
-ESTADO: rama main, pusheada. Tests (44, pytest), README, .python-version y requirements-dev.txt agregados.
+ESTADO: rama main, limpia y pusheada. Tests (46, pytest), README, .python-version y requirements-dev.txt agregados.
 Rediseño de escritorio/móvil/eliminados, modal "+" para nuevo contacto y botón Instalar app desplegados.
 Probado con Puppeteer en local (móvil y escritorio); la instalación PWA real no se probó.
 

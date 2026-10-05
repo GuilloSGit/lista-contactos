@@ -2,7 +2,7 @@
 
 Proyecto: app Flask 2.3 + Flask-SQLAlchemy (SQLite local `contactos.db`, Postgres/Neon en prod), PWA,
 deploy en Vercel (`vercel.json`, `wsgi.py`). Repo único, remoto `origin` = GitHub `GuilloSGit/lista-contactos`, rama `main`.
-No hay tests ni docs (README/ROADMAP/PROGRESS); la memoria vive en
+Hay `README.md` y tests (`pytest`); no hay ROADMAP/PROGRESS. La memoria vive en
 `~/.claude/projects/-Users-guillermoandrada-Projects-lista-contactos/memory/`.
 
 ## 1. Estado git
@@ -12,14 +12,13 @@ No hay tests ni docs (README/ROADMAP/PROGRESS); la memoria vive en
 Actualizar la memoria (decisiones, gotchas, cambios de plan). Solo lo no derivable del código.
 
 ## 3. Documentación
-No hay docs versionadas. Si la sesión introdujo algo que necesite explicación (variables de entorno,
-migraciones, deploy), crear/actualizar un `README.md` mínimo.
+Actualizar `README.md` solo donde cambió algo (funciones, variables de entorno, deploy, tests).
 
 ## 4. Verificación (obligatoria)
-- `python3 -m py_compile app.py wsgi.py`
+- `python3 -m py_compile app.py wsgi.py` y `python3 -m pytest -q` (deben pasar todos)
 - Si se tocaron templates: levantar `flask run`/`python app.py` y revisar `/contactos` en escritorio y móvil.
 - Si algo falla, no se commitea.
-Luego borrar `__pycache__/`.
+Luego borrar `__pycache__/` y `.pytest_cache/`.
 
 ## 5. Commit y push
 Conventional Commits, **sin** líneas de atribución a Claude/Anthropic (regla global del usuario).

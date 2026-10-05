@@ -5,7 +5,7 @@ Directorio de contactos con acceso por correo autorizado. App web en Flask, inst
 
 ## Funciones
 
-- Ingreso con un correo previamente autorizado (sin contraseña).
+- Ingreso con un correo previamente autorizado (sin contraseña ni consulta DNS: solo cuenta la lista de autorizados).
 - Lista de contactos con búsqueda instantánea (ignora mayúsculas y acentos).
 - Botón de WhatsApp que arma el link `wa.me` desde el teléfono (maneja formatos argentinos: `+54 9`, `0` inicial, `15`).
 - Link a Google Maps por contacto.
@@ -36,7 +36,7 @@ si la tabla está vacía.
 | Variable        | Uso                                                                                     |
 |-----------------|-----------------------------------------------------------------------------------------|
 | `DATABASE_URL`  | URL de Postgres. Se normaliza siempre a `postgresql+psycopg2://` (el driver instalado). |
-| `SECRET_KEY`    | Clave de sesión. **Definirla en producción**; el valor por defecto es solo de desarrollo. |
+| `SECRET_KEY`    | Clave de sesión y CSRF. Definida en Vercel (Production, Preview y Development); el valor por defecto es solo de desarrollo. |
 | `PORT`          | Puerto local (por defecto 5000).                                                        |
 
 Se pueden poner en un archivo `.env` (ignorado por git).
