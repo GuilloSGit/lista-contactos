@@ -220,3 +220,10 @@ def test_vercel_publica_subcarpetas_de_static():
     import json
     builds = json.load(open("vercel.json"))["builds"]
     assert any(b["src"] == "static/**" for b in builds)
+
+
+def test_editar_contacto_sin_email_no_muestra_None(admin, crear_contacto):
+    """Con email NULL el campo type=email mostraba 'None' y el navegador bloqueaba el guardado."""
+    cid = crear_contacto()
+    html = admin.get(f"/contactos/editar/{cid}").get_data(as_text=True)
+    assert 'value="None"' not in html
