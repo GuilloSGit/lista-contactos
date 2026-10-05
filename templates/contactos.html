@@ -125,8 +125,8 @@
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="mb-0">Lista de Contactos</h2>
             {% if session.get('rol') == 'admin' %}
-            <button class="btn btn-primary btn-sm d-md-none" type="button" data-bs-toggle="collapse"
-                data-bs-target="#nuevoContactoMovil" aria-expanded="false" aria-controls="nuevoContactoMovil"
+            <button class="btn btn-primary btn-sm d-md-none" type="button" data-bs-toggle="modal"
+                data-bs-target="#nuevoContactoModal"
                 title="Agregar contacto" aria-label="Agregar contacto">
                 <i class="fas fa-plus"></i>
             </button>
@@ -134,12 +134,18 @@
         </div>
 
         {% if session.get('rol') == 'admin' %}
-        <!-- Formulario de nuevo contacto (solo móvil, se despliega con el "+") -->
-        <div class="collapse d-md-none mb-3" id="nuevoContactoMovil">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Agregar Nuevo Contacto</h5>
-                    {{ form_nuevo_contacto("-m") }}
+        <!-- Formulario de nuevo contacto (solo móvil, modal abierto con el "+") -->
+        <div class="modal fade d-md-none" id="nuevoContactoModal" tabindex="-1"
+            aria-labelledby="nuevoContactoTitulo" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="nuevoContactoTitulo">Agregar Nuevo Contacto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                        {{ form_nuevo_contacto("-m") }}
+                    </div>
                 </div>
             </div>
         </div>
