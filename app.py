@@ -243,8 +243,9 @@ def login():
         email = request.form.get('email')
         
         try:
-            # Validar el formato del correo electrónico
-            valid = validate_email(email)
+            # Solo formato: quién entra lo decide la lista de autorizados, y la consulta DNS
+            # (check_deliverability) dejaría afuera a todos si el DNS falla.
+            valid = validate_email(email, check_deliverability=False)
             email = valid.email
             
             # Buscar el usuario en la base de datos

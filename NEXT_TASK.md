@@ -29,8 +29,8 @@ PRÓXIMAS PRIORIDADES:
    contactos_dump.sql, clean_dump.sql, load_to_neon.load, contactos.db, instance/contactos.db). Evaluar
    sacarlos del repo y agregarlos a .gitignore (decisión del usuario; no se tocaron).
 3. Limpiar vercel.json (la config "runtime" dentro de builds se ignora) y runtime.txt (python-3.10.0, no se usa).
-4. Login: validate_email hace consulta DNS (check_deliverability); si el DNS falla, nadie entra. Evaluar
-   desactivarlo en producción. SECRET_KEY y WTF_CSRF_SECRET_KEY tienen valores por defecto de desarrollo.
+4. SECRET_KEY y WTF_CSRF_SECRET_KEY tienen valores por defecto de desarrollo: definir SECRET_KEY en Vercel
+   y sacar la clave CSRF hardcodeada. (El login ya no consulta DNS; el alta de usuarios admin sí.)
 
 CONTEXTO TÉCNICO:
 - Lógica en app.py (rutas: /contactos, confirmar_actualizacion, eliminar, restaurar, admin/usuarios).

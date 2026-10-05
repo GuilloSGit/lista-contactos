@@ -25,6 +25,19 @@ def test_login_email_invalido(client):
     assert "correo electrónico válido" in r.get_data(as_text=True)
 
 
+def test_login_no_consulta_dns(client, monkeypatch):
+    """Si el DNS falla, el login no debe depender de check_deliverability."""
+    llamadas = []
+
+    def falso(email, **kw):
+        llamadas.append(kw)
+        return type("V", (), {"email": email})()
+
+    monkeypatch.setattr("app.validate_email", falso)
+    client.post("/login", data={"email": "guillermoandrada@gmail.com"})
+    assert llamadas == [{"check_deliverability": False}]
+
+
 def test_contactos_requiere_login(client):
     r = client.get("/contactos")
     assert r.status_code == 302 and "/login" in r.headers["Location"]

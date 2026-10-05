@@ -26,7 +26,7 @@ app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
 # validate_email consulta DNS por defecto: los tests no deben depender de la red ni de que
 # el dominio de prueba (example.com) tenga registros MX.
 _validate_email_real = app_module.validate_email
-app_module.validate_email = lambda email, **kw: _validate_email_real(email, check_deliverability=False)
+app_module.validate_email = lambda email, **kw: _validate_email_real(email, **{**kw, 'check_deliverability': False})
 
 ADMIN_EMAIL = "guillermoandrada@gmail.com"
 USER_EMAIL = "usuario@example.com"
