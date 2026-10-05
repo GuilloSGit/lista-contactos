@@ -28,9 +28,9 @@ try:
     if not db_url:
         raise ValueError("DATABASE_URL no está configurada")
         
-    # Asegurarse de que la URL use postgresql://
-    if db_url.startswith('postgres://'):
-        db_url = db_url.replace('postgres://', 'postgresql://', 1)
+    # Forzar el driver psycopg2 (el único instalado en requirements.txt);
+    # si la URL trae otro driver (p. ej. +psycopg) o no lo especifica, normalizarla.
+    db_url = re.sub(r'^postgres(ql)?(\+\w+)?://', 'postgresql+psycopg2://', db_url)
     
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 except Exception as e:
