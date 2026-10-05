@@ -213,3 +213,10 @@ def test_admin_elimina_usuario_pero_no_a_si_mismo(admin):
 def test_csrf_usa_secret_key_y_no_una_clave_hardcodeada():
     assert "dev-csrf-key-123" not in open("app.py", encoding="utf-8").read()
     assert not app.config.get("WTF_CSRF_SECRET_KEY")
+
+
+def test_vercel_publica_subcarpetas_de_static():
+    """static/* solo toma el primer nivel y dejaba afuera static/icons/ (404 en el manifest)."""
+    import json
+    builds = json.load(open("vercel.json"))["builds"]
+    assert any(b["src"] == "static/**" for b in builds)
