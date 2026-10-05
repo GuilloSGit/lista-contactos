@@ -114,23 +114,30 @@
                             <th>Teléfono</th>
                             <th>GPS</th>
                             {% if session.get('rol') == 'admin' %}
-                            <th>Acciones</th>
+                            <th class="text-end">Acciones</th>
                             {% endif %}
                         </tr>
                     </thead>
                     <tbody>
                         {% for contacto in contactos %}
-                        <tr class="{% if contacto.necesita_actualizacion %}table-danger{% endif %}">
-                            <td class="align-middle">{{ contacto.nombre }}</td>
+                        <tr>
+                            <td class="align-middle">
+                                <div class="fw-semibold">{{ contacto.nombre }}</div>
+                                {% if contacto.necesita_actualizacion %}
+                                <span class="badge text-bg-danger mt-1">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>Desactualizado
+                                </span>
+                                {% endif %}
+                            </td>
                             <td class="align-middle">
                                 {% if contacto.telefono %}
                                 <div class="d-flex flex-column gap-1">
-                                    <a href="tel:{{ contacto.telefono }}" class="text-decoration-none">
+                                    <a href="tel:{{ contacto.telefono }}" class="text-decoration-none text-nowrap">
                                         <i class="fas fa-phone-alt me-2"></i>{{ contacto.telefono }}
                                     </a>
                                     <!-- Link WhatsApp -->
                                     <a href="{{ contacto.whatsapp_url }}" target="_blank"
-                                        class="text-decoration-none text-success">
+                                        class="text-decoration-none text-success text-nowrap">
                                         <i class="fab fa-whatsapp me-2"></i>Enviar Mensaje
                                     </a>
                                 </div>
@@ -138,7 +145,7 @@
                                 <span class="text-muted"><i class="fas fa-phone-alt me-2"></i>Sin teléfono</span>
                                 {% endif %}
                             </td>
-                            <td class="align-middle" style="min-width: 200px;">
+                            <td class="align-middle" style="min-width: 160px;">
                                 {% if contacto.gps_url %}
                                 <a href="{{ contacto.gps_url }}" target="_blank"
                                     class="btn btn-sm btn-outline-primary d-block w-100">
@@ -152,29 +159,34 @@
                             </td>
                             {% if session.get('rol') == 'admin' %}
                             <td class="align-middle">
-                                {% if contacto.necesita_actualizacion %}
-                                <form method="POST"
-                                    action="{{ url_for('confirmar_actualizacion', contacto_id=contacto.id) }}"
-                                    class="d-inline">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                    <button type="submit" class="btn btn-sm btn-success me-1"
-                                        title="Confirmar datos actualizados">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                </form>
-                                {% endif %}
-                                <a href="{{ url_for('editar_contacto', contacto_id=contacto.id) }}"
-                                    class="btn btn-sm btn-outline-primary me-1">
-                                    <i class="fas fa-edit me-1"></i> Editar
-                                </a>
-                                <form method="POST" action="{{ url_for('eliminar_contacto', contacto_id=contacto.id) }}"
-                                    class="d-inline"
-                                    onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contacto.nombre }}?')">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
+                                <div class="d-flex flex-column align-items-stretch gap-1" style="min-width: 150px;">
+                                    {% if contacto.necesita_actualizacion %}
+                                    <form method="POST"
+                                        action="{{ url_for('confirmar_actualizacion', contacto_id=contacto.id) }}"
+                                        class="m-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                        <button type="submit" class="btn btn-sm btn-success w-100 text-nowrap"
+                                            title="Confirmar datos actualizados">
+                                            <i class="fas fa-check me-1"></i> Confirmar datos
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                    <div class="d-flex gap-1">
+                                        <a href="{{ url_for('editar_contacto', contacto_id=contacto.id) }}"
+                                            class="btn btn-sm btn-outline-primary flex-fill text-nowrap">
+                                            <i class="fas fa-edit me-1"></i> Editar
+                                        </a>
+                                        <form method="POST"
+                                            action="{{ url_for('eliminar_contacto', contacto_id=contacto.id) }}"
+                                            class="m-0 flex-fill"
+                                            onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contacto.nombre }}?')">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                            <button type="submit" class="btn btn-danger btn-sm w-100 text-nowrap">
+                                                <i class="fas fa-trash me-1"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </td>
                             {% endif %}
                         </tr>
@@ -194,8 +206,10 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between">
                                 {% if contacto.necesita_actualizacion %}
-                                <div class="alert alert-danger d-flex justify-content-between w-100">
-                                    <strong>¡Atención!</strong>&nbsp;Este contacto necesita actualización.
+                                <div class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
+                                    <span class="badge text-bg-danger">
+                                        <i class="fas fa-exclamation-triangle me-1"></i>Desactualizado
+                                    </span>
                                     {% if session.get('rol') == 'admin' %}
                                     <form method="POST"
                                         action="{{ url_for('confirmar_actualizacion', contacto_id=contacto.id) }}"
@@ -203,7 +217,7 @@
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                         <button type="submit" class="btn btn-sm btn-success"
                                             title="Confirmar datos actualizados">
-                                            <i class="fas fa-check"></i>
+                                            <i class="fas fa-check me-1"></i> Confirmar datos
                                         </button>
                                     </form>
                                     {% endif %}
@@ -273,7 +287,7 @@
                                     onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contacto.nombre }}?')">
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                                     <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash"></i>
+                                        <i class="fas fa-trash me-1"></i> Eliminar
                                     </button>
                                 </form>
                             </div>
