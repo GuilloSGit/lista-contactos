@@ -49,7 +49,6 @@ db = SQLAlchemy(app)
 
 # Inicializar CSRF con configuración básica
 app.config['WTF_CSRF_ENABLED'] = True
-app.config['WTF_CSRF_SECRET_KEY'] = 'dev-csrf-key-123'
 csrf = CSRFProtect(app)
 
 # Agregar CSRF token al contexto de la plantilla

@@ -208,3 +208,8 @@ def test_admin_elimina_usuario_pero_no_a_si_mismo(admin):
     with app.app_context():
         assert UsuarioAutorizado.query.filter_by(email="borrar@example.com").count() == 0
         assert UsuarioAutorizado.query.filter_by(email="guillermoandrada@gmail.com").count() == 1
+
+
+def test_csrf_usa_secret_key_y_no_una_clave_hardcodeada():
+    assert "dev-csrf-key-123" not in open("app.py", encoding="utf-8").read()
+    assert not app.config.get("WTF_CSRF_SECRET_KEY")
