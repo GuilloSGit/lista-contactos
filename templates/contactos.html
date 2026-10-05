@@ -182,101 +182,67 @@
 
         <!-- Versión para móviles (cards) -->
         <div class="d-md-none">
-            <div class="row g-3">
+            <div class="d-flex flex-column gap-2">
                 {% for contacto in contactos %}
-                <div class="col-12">
-                    <div
-                        class="card shadow-sm {% if contacto.necesita_actualizacion %}bg-danger bg-opacity-10 border-danger border-opacity-50{% endif %}">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                {% if contacto.necesita_actualizacion %}
-                                <div class="alert alert-danger d-flex flex-wrap justify-content-between align-items-center gap-2 w-100">
-                                    <span class="badge text-bg-danger">
-                                        <i class="fas fa-exclamation-triangle me-1"></i>Desactualizado
-                                    </span>
-                                    {% if session.get('rol') == 'admin' %}
-                                    <form method="POST"
-                                        action="{{ url_for('confirmar_actualizacion', contacto_id=contacto.id) }}"
-                                        class="d-inline m-0 p-0">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                        <button type="submit" class="btn btn-sm btn-success"
-                                            title="Confirmar datos actualizados">
-                                            <i class="fas fa-check me-1"></i> Confirmar datos
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="d-flex flex-column">
-                                <!-- Nombre -->
-                                <div class="w-100">
-                                    <h5 class="card-title">{{ contacto.nombre }}</h5>
-                                </div>
-                                <!-- Mapa -->
-                                <div class="mb-3 mt-2">
-                                    {% if contacto.gps_url %}
-                                    <a href="{{ contacto.gps_url }}" target="_blank"
-                                        class="btn btn-sm btn-outline-primary w-100">
-                                        <i class="fas fa-external-link-alt me-1"></i>
-                                        Abrir en Maps
-                                    </a>
-                                    {% else %}
-                                    <div class="text-center text-muted mt-2" style="font-size: 0.85rem;">
-                                        <i class="fas fa-map-marker-alt me-1"></i>
-                                        Sin enlace GPS
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <!-- Teléfono -->
-                            <div class="mb-2">
-                                {% if contacto.telefono %}
-                                <a href="tel:{{ contacto.telefono }}"
-                                    class="text-decoration-none d-flex align-items-center mb-2">
-                                    <i class="fas fa-phone-alt me-2 text-primary"></i>
-                                    <span>{{ contacto.telefono }}</span>
-                                </a>
-                                <a href="{{ contacto.whatsapp_url }}" target="_blank"
-                                    class="text-decoration-none d-flex align-items-center text-success">
-                                    <i class="fab fa-whatsapp me-2"></i>
-                                    <span>Enviar Mensaje</span>
-                                </a>
-                                {% else %}
-                                <div class="d-flex align-items-center text-muted">
-                                    <i class="fas fa-phone-alt me-2"></i>
-                                    <span>Sin teléfono</span>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Dirección -->
-                            {% if contacto.direccion %}
-                            <div class="mb-2 text-muted">
-                                <i class="fas fa-map-marker-alt me-2"></i>
-                                <small>{{ contacto.direccion }}</small>
-                            </div>
-                            {% endif %}
-
-                            <!-- Acciones de administrador -->
-                            {% if session.get('rol') == 'admin' %}
-                            <div class="d-flex gap-2 mt-3">
-                                <a href="{{ url_for('editar_contacto', contacto_id=contacto.id) }}"
-                                    class="btn btn-sm btn-outline-primary flex-grow-1">
-                                    <i class="fas fa-edit me-1"></i> Editar
-                                </a>
-                                <form method="POST" action="{{ url_for('eliminar_contacto', contacto_id=contacto.id) }}"
-                                    class="d-inline"
-                                    onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contacto.nombre }}?')">
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="fas fa-trash me-1"></i> Eliminar
-                                    </button>
-                                </form>
-                            </div>
+                <div class="card">
+                    <div class="card-body py-2 px-3">
+                        <div class="d-flex justify-content-between align-items-baseline gap-2">
+                            <span class="fw-semibold">{{ contacto.nombre }}</span>
+                            {% if contacto.necesita_actualizacion %}
+                            <span class="text-danger small text-nowrap">
+                                <i class="fas fa-exclamation-circle"></i> Desactualizado
+                            </span>
                             {% endif %}
                         </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            {% if contacto.telefono %}
+                            <span>
+                                <a href="tel:{{ contacto.telefono }}" class="text-decoration-none text-body">
+                                    {{ contacto.telefono }}
+                                </a>
+                                <a href="{{ contacto.whatsapp_url }}" target="_blank" class="ms-2 text-success"
+                                    title="Enviar mensaje por WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                            </span>
+                            {% else %}
+                            <span class="text-muted">Sin teléfono</span>
+                            {% endif %}
+                            {% if contacto.gps_url %}
+                            <a href="{{ contacto.gps_url }}" target="_blank" class="text-decoration-none">
+                                <i class="fas fa-map-marker-alt me-1"></i>Maps
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">Sin GPS</span>
+                            {% endif %}
+                        </div>
+
+                        {% if contacto.direccion %}
+                        <div class="text-muted small">{{ contacto.direccion }}</div>
+                        {% endif %}
+
+                        {% if session.get('rol') == 'admin' %}
+                        <div class="d-flex gap-1 mt-2">
+                            {% if contacto.necesita_actualizacion %}
+                            <form method="POST"
+                                action="{{ url_for('confirmar_actualizacion', contacto_id=contacto.id) }}"
+                                class="m-0 flex-fill">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-sm btn-outline-success py-0 w-100"
+                                    title="Confirmar datos actualizados">Confirmar</button>
+                            </form>
+                            {% endif %}
+                            <a href="{{ url_for('editar_contacto', contacto_id=contacto.id) }}"
+                                class="btn btn-sm btn-outline-secondary py-0 flex-fill">Editar</a>
+                            <form method="POST" action="{{ url_for('eliminar_contacto', contacto_id=contacto.id) }}"
+                                class="m-0 flex-fill"
+                                onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ contacto.nombre }}?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary py-0 w-100 text-danger">Eliminar</button>
+                            </form>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
