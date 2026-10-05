@@ -36,7 +36,7 @@ PRÓXIMAS PRIORIDADES:
 CONTEXTO TÉCNICO:
 - Lógica en app.py (rutas: /contactos, confirmar_actualizacion, eliminar, restaurar, admin/usuarios).
 - app.py hace consultas a la DB al importarse: si la DB falla, toda la web da 500.
-- Logs de prod: `vercel logs <url>` (solo en vivo, 5 min); el proyecto no está linkeado (`vercel link`).
+- Logs de prod: `vercel logs <url>` (solo en vivo, 5 min); el proyecto ya está linkeado (`.vercel/`).
 - Acciones de admin solo si session['rol'] == 'admin'.
 - Tests: `pytest` (conftest usa SQLite temporal, anula load_dotenv y validate_email DNS). Local: reiniciar
   el server tras editar templates (no recarga en producción); matar por PID, el proceso se llama `Python app.py`.
