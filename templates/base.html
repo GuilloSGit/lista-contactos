@@ -50,6 +50,13 @@
                     {% endif %}
                     {% endif %}
                 </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item d-none" id="installItem">
+                        <button type="button" class="btn btn-light btn-sm my-1 me-2" id="installBtn">
+                            <i class="fas fa-download me-1"></i> Instalar app
+                        </button>
+                    </li>
+                </ul>
                 {% if 'email' in session %}
                 <ul class="navbar-nav">
                     <li class="nav-item">
@@ -146,6 +153,39 @@
                 });
             });
         });
+
+        // Botón "Instalar app"
+        (function() {
+            const item = document.getElementById('installItem');
+            const btn = document.getElementById('installBtn');
+            const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+            if (standalone) return;
+            let deferredPrompt = null;
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+            window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                deferredPrompt = e;
+                item.classList.remove('d-none');
+            });
+            window.addEventListener('appinstalled', function() {
+                deferredPrompt = null;
+                item.classList.add('d-none');
+            });
+            // iOS no dispara beforeinstallprompt: mostrar instrucciones
+            if (isIOS) item.classList.remove('d-none');
+
+            btn.addEventListener('click', async function() {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    await deferredPrompt.userChoice;
+                    deferredPrompt = null;
+                    item.classList.add('d-none');
+                } else if (isIOS) {
+                    alert('Para instalar: tocá el botón Compartir y elegí "Agregar a pantalla de inicio".');
+                }
+            });
+        })();
 
         // Registrar Service Worker para PWA
         if ('serviceWorker' in navigator) {
