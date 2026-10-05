@@ -1,6 +1,7 @@
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session, g, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from flask_wtf.csrf import CSRFProtect, generate_csrf
 from email_validator import validate_email, EmailNotValidError
 from datetime import datetime, timedelta
@@ -21,6 +22,13 @@ app = Flask(__name__)
 # Configuración para producción/desarrollo
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-123')
 
+def normalizar_db_url(db_url):
+    """Fuerza el driver psycopg2 (el único instalado en requirements.txt).
+
+    Si la URL de Postgres trae otro driver (p. ej. +psycopg) o no lo especifica, la normaliza.
+    """
+    return re.sub(r'^postgres(ql)?(\+\w+)?://', 'postgresql+psycopg2://', db_url)
+
 # Configuración de la base de datos
 try:
     db_url = os.environ.get('DATABASE_URL')
@@ -28,9 +36,7 @@ try:
     if not db_url:
         raise ValueError("DATABASE_URL no está configurada")
         
-    # Forzar el driver psycopg2 (el único instalado en requirements.txt);
-    # si la URL trae otro driver (p. ej. +psycopg) o no lo especifica, normalizarla.
-    db_url = re.sub(r'^postgres(ql)?(\+\w+)?://', 'postgresql+psycopg2://', db_url)
+    db_url = normalizar_db_url(db_url)
     
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 except Exception as e:
@@ -409,8 +415,7 @@ def restaurar_contacto(contacto_id):
 
 @app.route('/logout')
 def logout():
-    session.pop('email', None)
-    session.pop('main_name', None)
+    session.clear()
     return redirect(url_for('login'))
 
 @app.route('/admin/usuarios', methods=['GET', 'POST'])
@@ -490,7 +495,7 @@ def no_autorizado():
 def health_check():
     try:
         # Intentar una consulta simple a la base de datos
-        db.session.execute('SELECT 1')
+        db.session.execute(text('SELECT 1'))
         return jsonify({
             'status': 'healthy',
             'database': 'connected'
